@@ -5,6 +5,7 @@ using UnityEngine;
 public class RayGun : MonoBehaviour
 {
 
+    public LayerMask layerMask;
     public OVRInput.RawButton shootingButton;
     public LineRenderer linePrefab;
     public Transform shootingPoint;
@@ -30,13 +31,26 @@ public class RayGun : MonoBehaviour
     {
         Debug.Log("Pew");
 
+        Ray ray = new Ray(shootingPoint.position, shootingPoint.forward);
+        bool hasHit = Physics.Raycast(ray, out RaycastHit hit, maxLineDistance, layerMask);
+
+        Vector3 endPoint = Vector3.zero;
+
+        //stops ray when it finds a collider
+        if (hasHit)
+        {
+            Debug.Log("Ray Collided");
+            endPoint = hit.point;
+        }
+        else
+        {
+            endPoint = shootingPoint.position + shootingPoint.forward * maxLineDistance;
+        }
+
         LineRenderer line = Instantiate(linePrefab);
         line.positionCount = 2;
         line.SetPosition(0, shootingPoint.position);
-
-        Vector3 endpoint = shootingPoint.position + shootingPoint.forward * maxLineDistance;
-
-        line.SetPosition(1, endpoint);
+        line.SetPosition(1, endPoint);
 
         Destroy(line.gameObject, lineShowTimer);
     }
